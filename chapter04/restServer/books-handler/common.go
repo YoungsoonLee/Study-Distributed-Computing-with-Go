@@ -1,3 +1,5 @@
+// restServer/books-handler/common.go
+
 package booksHandler
 
 import (
@@ -43,16 +45,16 @@ func GetBooks() map[string]bookResource {
 		books[id] = bookResource{
 			Id:    id,
 			Title: fmt.Sprintf("Book-%s", id),
-			Link:  fmt.Sprintf("http://link-to-books%s.com", id),
+			Link:  fmt.Sprintf("http://link-to-book%s.com", id),
 		}
 	}
 	return books
 }
 
 // MakeHandler shows a common pattern used reduce duplicated code.
-// !!!!!!!!!!
 func MakeHandler(fn func(http.ResponseWriter, *http.Request, string, string, chan<- Action),
 	endpoint string, actionCh chan<- Action) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		method := r.Method
@@ -81,7 +83,7 @@ func writeResponse(w http.ResponseWriter, resp response) {
 		writeError(w, http.StatusInternalServerError)
 		fmt.Println("Error while serializing payload: ", err)
 	} else {
-		w.Header().Set("Content-type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(resp.StatusCode)
 		w.Write(serializedPayload)
 	}
