@@ -295,11 +295,11 @@ func FeedHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte('{"code":500, "msg":"Error occurred while trying to retrieve documents."}'))
+		w.Write([]byte(`{"code": 500, "msg": "Error occurred while trying to retrieve documents."}`))
 		return
-	}else if r.Method != "POST" {
+	} else if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte('{"code":405, "msg":"Method Not Allowed."}'))
+		w.Write([]byte(`{"code":405, "msg":"Method Not Allowed."}`))
 		return
 	}
 
@@ -310,5 +310,5 @@ func FeedHandler(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&newDoc)
 	pProcessCh <- newDoc
 
-	w.Write([]byte('{"code":200, "msg":"Request is being processed."}'))
+	w.Write([]byte(`{"code":200, "msg":"Request is being processed."}`))
 }

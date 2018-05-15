@@ -39,7 +39,7 @@ var stopWords = []string{
 
 // simplifyToken is responsible to normalizing a string token and
 // also checks whether the token should be indexed or not.
-func simplifyToken(token string) (string, bool) {
+func SimplifyToken(token string) (string, bool) {
 	simpleToken := strings.ToLower(punctuations.ReplaceAllString(token, ""))
 	for _, stopWord := range stopWords {
 		if stopWord == simpleToken {
