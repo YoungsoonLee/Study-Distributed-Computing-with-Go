@@ -1,6 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/concierge/api"
+	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/concierge/common"
+)
 
 func main() {
 	common.Log("Adding API handlers...")
