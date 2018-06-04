@@ -43,11 +43,10 @@ func (d *document) String() string {
 	for lin, tis := range d.Indices {
 		var lBuffer bytes.Buffer
 		for _, ti := range tis {
-			lBuffer.WriteString(fmt.Sprintf("%s", ti.String()))
-			buffer.WriteString(fmt.Sprintf("@%d -> %s\n", lin, lBuffer.String()))
+			lBuffer.WriteString(fmt.Sprintf("%s ", ti.String()))
 		}
+		buffer.WriteString(fmt.Sprintf("@%d -> %s\n", lin, lBuffer.String()))
 	}
-
 	return str + buffer.String()
 }
 
@@ -55,7 +54,7 @@ func (d *document) String() string {
 type documentCatalog map[string]*document
 
 func (dc *documentCatalog) String() string {
-	return fmt.Sprintf("%#v", dc) //타입과 값을 함께 표현합니다.
+	return fmt.Sprintf("%#v", dc)
 }
 
 // tCatalog - key in map represents Token.
@@ -75,7 +74,7 @@ type tcMsg struct {
 	DC    documentCatalog
 }
 
-// pProcessCh is used to process /index's payload and start process to add the token to catalog(tCatalog)
+// pProcessCh is used to process /index's payload and start process to add the token to catalog (tCatalog).
 var pProcessCh chan tPayload
 
 // tcGet is used to retrieve a token's catalog (documentCatalog).
@@ -84,11 +83,10 @@ var tcGet chan tcCallback
 func StartIndexSystem() {
 	pProcessCh = make(chan tPayload, 100)
 	tcGet = make(chan tcCallback, 20)
-
 	go tIndexer(pProcessCh, tcGet)
 }
 
-// tIndexer maintain a catalog of all tokens along with where they occur within documents.
+// tIndexer maintains a catalog of all tokens along with where they occur within documents.
 func tIndexer(ch chan tPayload, callback chan tcCallback) {
 	store := tCatalog{}
 	for {
@@ -99,6 +97,7 @@ func tIndexer(ch chan tPayload, callback chan tcCallback) {
 				DC:    dc,
 				Token: msg.Token,
 			}
+
 		case pd := <-ch:
 			dc, exists := store[pd.Token]
 			if !exists {
@@ -120,7 +119,6 @@ func tIndexer(ch chan tPayload, callback chan tcCallback) {
 				Index:  pd.Index,
 				LIndex: pd.LIndex,
 			}
-
 			doc.Indices[tin.LIndex] = append(doc.Indices[tin.LIndex], tin)
 			doc.Count++
 		}
@@ -130,7 +128,7 @@ func tIndexer(ch chan tPayload, callback chan tcCallback) {
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte(`{"code":405,"msg":"Method Not Allowed.}`))
+		w.Write([]byte(`{"code": 405, "msg": "Method Not Allowed."}`))
 		return
 	}
 
@@ -139,10 +137,9 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 	var tp tPayload
 	decoder.Decode(&tp)
-
 	log.Printf("Token received%#v\n", tp)
 
 	pProcessCh <- tp
 
-	w.Write([]byte(`{"code":200, "msg":"Token are being added to index."`))
+	w.Write([]byte(`{"code": 200, "msg": "Tokens are being added to index."}`))
 }

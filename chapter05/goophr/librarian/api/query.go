@@ -1,6 +1,12 @@
 package api
 
-import "sort"
+import (
+	"encoding/json"
+	"net/http"
+	"sort"
+
+	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/librarian/common"
+)
 
 type docResult struct {
 	DocID   string   `json:"doc_id"`
@@ -13,10 +19,9 @@ type result struct {
 	Data  []docResult `json:"data"`
 }
 
-// getResult returns unsorted search results & a map of documents containing tokens.
-func getResult(out chan tcMsg, count int) tCatalog {
+// getResults returns unsorted search results & a map of documents containing tokens.
+func getResults(out chan tcMsg, count int) tCatalog {
 	tc := tCatalog{}
-
 	for i := 0; i < count; i++ {
 		dc := <-out
 		tc[dc.Token] = dc.DC
@@ -45,7 +50,7 @@ func getFScores(docIDScore map[string]int) (map[int][]string, []int) {
 
 func getDocMaps(tc tCatalog) (map[string]int, map[string]tIndices) {
 	// docIDScore maps DocIDs to occurences of all tokens.
-	// key: DocID
+	// key: DocID.
 	// val: Sum of all occurences of tokens so far.
 	docIDScore := map[string]int{}
 	docIndices := map[string]tIndices{}
@@ -93,8 +98,9 @@ func sortResults(tc tCatalog) []docResult {
 }
 
 // getSearchResults returns a list of documents.
-// They are listed in decending order of occurences.
+// They are listed in descending order of occurences.
 func getSearchResults(sts []string) []docResult {
+
 	callback := make(chan tcMsg)
 
 	for _, st := range sts {
@@ -105,7 +111,38 @@ func getSearchResults(sts []string) []docResult {
 			}
 		}(st)
 	}
-	cts := getResult(callback, len(sts))
+
+	cts := getResults(callback, len(sts))
 	results := sortResults(cts)
 	return results
+}
+
+func QueryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(`{"code": 405, "msg": "Method Not Allowed."}`))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	var searchTerms []string
+	decoder.Decode(&searchTerms)
+
+	results := getSearchResults(searchTerms)
+
+	payload := result{
+		Count: len(results),
+		Data:  results,
+	}
+
+	if serializedPayload, err := json.Marshal(payload); err == nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(serializedPayload)
+	} else {
+		common.Warn("Unable to serialize all docs: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"code": 500, "msg": "Error occurred while trying to retrieve documents."}`))
+	}
 }

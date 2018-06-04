@@ -3,7 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/concierge/common"
+	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/librarian/api"
+	"github.com/YoungsoonLee/distributed-go/chapter05/goophr/librarian/common"
 )
 
 func main() {
